@@ -11,14 +11,15 @@ class AccountManager(BaseUserManager):
     use_in_migrations = True
 
     def _create_user(self, email,name, mcode, numuser, typeuser, password, **extra_fields):
-        values = [email,name, mcode, numuser, typeuser]
+        values          = [email,name, mcode, numuser, typeuser]
         field_value_map = dict(zip(self.model.REQUIRED_FIELDS, values))
+        
         for field, value in field_value_map.items():
             if not value:
                 raise ValueError(f"The value {field} is required")
         
         email = self.normalize_email(email)
-        user = self.model(
+        user  = self.model(
                             email=email,
                             name=name,
                             mcode=mcode,
@@ -46,21 +47,23 @@ class SLMUser(AbstractBaseUser, PermissionsMixin):
     """Class for all type of user for Solumada Academie Users"""
 
     class TypeChoiceField(models.TextChoices):
-        admin = 'admin', _('admin')
-        teacher = 'teacher', ('teacher')
+        admin       = 'admin', _('admin')
+        teacher     = 'teacher', ('teacher')
         participant = 'participant', _('participant')
 
-    email = models.EmailField(verbose_name="user email")
-    name = models.CharField(max_length=50, verbose_name='username')
-    mcode = models.CharField(max_length=50, verbose_name="M Code")
-    numuser = models.CharField(max_length=50, verbose_name="Num Agent")
-    typeuser = models.CharField(max_length=50, choices=TypeChoiceField.choices, default=TypeChoiceField.participant)
-    is_staff = models.BooleanField(default=False)
-    is_active = models.BooleanField(default=True)
-    date_joined = models.DateTimeField(default=timezone.now)
-    last_login = models.DateTimeField(null=True)
+    email        = models.EmailField(verbose_name="user email")
+    name         = models.CharField(max_length=50, verbose_name='username')
+    mcode        = models.CharField(max_length=50, verbose_name="M Code")
+    numuser      = models.CharField(max_length=50, verbose_name="Num Agent")
+    typeuser     = models.CharField(max_length=50, choices=TypeChoiceField.choices, default=TypeChoiceField.participant)
+    is_staff     = models.BooleanField(default=False)
+    is_active    = models.BooleanField(default=True)
+    date_joined  = models.DateTimeField(default=timezone.now)
+    date_created = models.DateFieldTimeField(auto_now=True) 
+    date_updated = models.DateTimeField(auto_now_add=True)
+    last_login  = models.DateTimeField(auto_now_add=True)
     # picture = models.ImageField()
-    objects = AccountManager()
+    objects     = AccountManager()
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['name','mcode', 'numuser', 'typeuser']
@@ -68,6 +71,7 @@ class SLMUser(AbstractBaseUser, PermissionsMixin):
     class Meta:
         ordering = ["date_joined"]
         verbose_name_plural = "SLMUsers"
+        permissions = ['add_user', 'change_user', 'delete_user', 'add_only', 'all']
 
     def __str__(self) -> str:
         super().__str__()
