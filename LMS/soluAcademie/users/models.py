@@ -1,12 +1,12 @@
-from email.mime.image import MIMEImage
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
-from django.contrib.auth import get_user_model
 from django.utils import timezone
-from django.utils.translation import gettext_lazy as _
+from django.utils.translation import gettext_lazy as _ 
+
+import uuid
 
 class AccountManager(BaseUserManager):
-    """class object manager for users"""
+    """class for object manager for users"""
 
     use_in_migrations = True
 
@@ -38,55 +38,55 @@ class AccountManager(BaseUserManager):
     def create_superuser(self, email, name, mcode, numuser, typeuser, password=None, **extra_fields):
         extra_fields.setdefault('is_staff', True)
         extra_fields.setdefault('is_superuser', True)
-        if extra_fields.get('is_staff') is not True and typeuser not 'admin':
+        if extra_fields.get('is_staff') is not True and typeuser is not 'admin':
             raise ValueError("superuser must have is_superuser=True")
         return self._create_user(email, name, mcode, numuser, typeuser, password, **extra_fields)
 
 
-class SLMUser(AbstractBaseUser, PermissionsMixin):
+class User(AbstractBaseUser, PermissionsMixin):
     """Class for all type of user for Solumada Academie Users"""
 
     class TypeChoiceField(models.TextChoices):
         admin       = 'admin', _('admin')
         teacher     = 'teacher', ('teacher')
         participant = 'participant', _('participant')
-
-<<<<<<< HEAD
-    email        = models.EmailField(verbose_name="user email")
-    name         = models.CharField(max_length=50, verbose_name='username')
-    mcode        = models.CharField(max_length=50, verbose_name="M Code")
-    numuser      = models.CharField(max_length=50, verbose_name="Num Agent")
-    typeuser     = models.CharField(max_length=50, choices=TypeChoiceField.choices, default=TypeChoiceField.participant)
-    is_staff     = models.BooleanField(default=False)
-    is_active    = models.BooleanField(default=True)
-    date_joined  = models.DateTimeField(default=timezone.now)
-    date_created = models.DateFieldTimeField(auto_now=True) 
-    date_updated = models.DateTimeField(auto_now_add=True)
-    last_login  = models.DateTimeField(auto_now_add=True)
-=======
-    email = models.EmailField(verbose_name="user email", unique=True)
-    username = models.CharField(max_length=50, verbose_name='username')
-    mcode = models.CharField(max_length=50, verbose_name="M Code")
-    numuser = models.CharField(max_length=50, verbose_name="Num Agent")
-    typeuser = models.CharField(max_length=50, choices=TypeChoiceField.choices, default=TypeChoiceField.participant, verbose_name='type user')
+    
+    unique_id = models.UUIDField(primary_key=True ,default=uuid.uuid4, editable=False)
+    email = models.EmailField(verbose_name="user email", unique=True, blank=False)
+    username = models.CharField(max_length=50, verbose_name='username', blank=False)
+    mcode = models.CharField(max_length=50, verbose_name="M Code", blank=False)
+    numuser = models.CharField(max_length=50, verbose_name="Num Agent", blank=False)
+    typeuser = models.CharField(max_length=50, choices=TypeChoiceField.choices, default=TypeChoiceField.participant, verbose_name='type user', blank=False)
     is_staff = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
-    date_joined = models.DateTimeField(default=timezone.now)
-    last_login = models.DateTimeField(null=True)
->>>>>>> e384a9502dfb9ebb7dd5ee5dc38cf5a65b454a4f
+    date_joined = models.DateTimeField(auto_now_add=timezone.now)
+    last_login = models.DateTimeField(auto_now=True)
+    updated_at = models.DateTimeField(auto_now=True)
     # picture = models.ImageField()
     objects     = AccountManager()
 
-    USERNAME_FIELD = 'email'
+    USERNAME_FIELD  = 'email'
     REQUIRED_FIELDS = ['name','mcode', 'numuser', 'typeuser']
 
     class Meta:
-        ordering = ["date_joined"]
-        verbose_name_plural = "SLMUsers"
-        permissions = ['add_user', 'change_user', 'delete_user', 'add_only', 'all']
+        ordering            = ["date_joined"]
+        verbose_name_plural = "Users"
+        permissions         =  [
+                                    ("have_no_user_permissions", "Have No Permissions on User"),
+                                    ("add_only", "Can Add User"),
+                                    ("add_user_only", "Can Add User Only"),
+                                    ("view_only", "Can Only View User"),
+                                    ("add_and_view_only", "Can Add And View"),
+                                    ("all_user_permissions", "Can Do everything to User"),
+                                ]
 
 
     def __str__(self) -> str:
         super().__str__()
         return self.name
+
+    @classmethod
+    def has_add_perm(self) -> bool:
+        user = self.request.user
+        return super().has_module_perms(app_label)
 
