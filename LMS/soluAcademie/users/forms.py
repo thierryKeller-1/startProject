@@ -4,7 +4,7 @@ from django.contrib.auth.forms import ReadOnlyPasswordHashField, UserCreationFor
 from django.utils.translation import ugettext as _
 
 import re
-from .models import SLMUser
+from .models import User
 
 
 class UserRegistrationForm(UserCreationForm):
@@ -12,18 +12,18 @@ class UserRegistrationForm(UserCreationForm):
     passwordConfirm = forms.CharField(label='Confirm password', widget=forms.PasswordInput)
 
     class Meta:
-        model = SLMUser
+        model = User
         fields = ('email', 'name', 'mcode', 'numuser', 'typeuser', 'password', 'passwordConfirm')
     
     def clean_name(self):
         name = self.cleaned_data.get('name')
-        if SLMUser.objects.exists('name'):
+        if User.objects.exists('name'):
             raise forms.ValidationError("user with this name already exist")
         return name
 
     def clean_mcode(self):
         mcode = self.cleaned_data.get('mcode')
-        if SLMUser.objects.exists('mcode'):
+        if User.objects.exists('mcode'):
             raise forms.ValidationError("user with this mcode already exist")
         return mcode
 
@@ -47,12 +47,16 @@ class UserRegistrationForm(UserCreationForm):
     def save(self, commit=True):
         user = super().save(commit=False)
         user.set_password(self.cleaned_data['password1'])
+        permissions = []
         if user.typeuser == 'admin':
             user.is_superuser = True
+            user.User.user_permissions.set('all_user_permissions')
+            user.save()
         else:
-            user.is_superuser = False
-        
-        user.save()
+            permissions.append('have_no_user_permissions')
+            user.user_permissions.set(permissions)
+            user.save()
+        return user
 
 
 

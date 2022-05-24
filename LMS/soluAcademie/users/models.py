@@ -10,7 +10,7 @@ class AccountManager(BaseUserManager):
 
     use_in_migrations = True
 
-    def _create_user(self, email,name, mcode, numuser, typeuser, password, **extra_fields):
+    def _create_student(self, email,name, mcode, numuser, typeuser, password, **extra_fields):
         values          = [email,name, mcode, numuser, typeuser]
         field_value_map = dict(zip(self.model.REQUIRED_FIELDS, values))
         
@@ -19,21 +19,48 @@ class AccountManager(BaseUserManager):
                 raise ValueError(f"The value {field} is required")
         
         email = self.normalize_email(email)
-        user  = self.model(
+        student  = self.model(
                             email=email,
                             name=name,
                             mcode=mcode,
                             numuser=numuser,
                             typeuser=typeuser
                         )
-        user.set_password(password)
-        user.save(using=self._db)
-        return user
+        student.set_password(password)
+        student.save(using=self._db)
+        return student
+
+    def _create_teacher(self, email,name, mcode, numuser, typeuser, password, **extra_fields):
+        values          = [email,name, mcode, numuser, typeuser]
+        field_value_map = dict(zip(self.model.REQUIRED_FIELDS, values))
+        
+        for field, value in field_value_map.items():
+            if not value:
+                raise ValueError(f"The value {field} is required")
+        
+        email = self.normalize_email(email)
+        student  = self.model(
+                            email=email,
+                            name=name,
+                            mcode=mcode,
+                            numuser=numuser,
+                            typeuser=typeuser
+                        )
+        student.set_password(password)
+        student.save(using=self._db)
+        return student
     
-    def create_user(self, email, name, mcode, numuser, typeuser, password=None, **extra_fields):
+    def create_student(self, email, name, mcode, numuser, typeuser, password=None, **extra_fields):
         extra_fields.setdefault('is_staff', False)
         extra_fields.setdefault('is_superuser', False)
         return self._create_user(email, name, mcode, numuser, typeuser, password, **extra_fields)
+
+
+    def create_teacher(self, email, name, mcode, numuser, typeuser, password=None, **extra_fields):
+        extra_fields.setdefault('is_staff', True)
+        extra_fields.setdefault('is_superuser', False)
+        return self._create_user(email, name, mcode, numuser, typeuser, password, **extra_fields)
+
 
     def create_superuser(self, email, name, mcode, numuser, typeuser, password=None, **extra_fields):
         extra_fields.setdefault('is_staff', True)
@@ -76,7 +103,7 @@ class User(AbstractBaseUser, PermissionsMixin):
                                     ("add_only", "Can Add User"),
                                     ("add_user_only", "Can Add User Only"),
                                     ("view_only", "Can Only View User"),
-                                    ("add_and_view_only", "Can Add And View"),
+                                    ("add_update_view_only", "Can Add And View"),
                                     ("all_user_permissions", "Can Do everything to User"),
                                 ]
 
@@ -85,8 +112,4 @@ class User(AbstractBaseUser, PermissionsMixin):
         super().__str__()
         return self.name
 
-    @classmethod
-    def has_add_perm(self) -> bool:
-        user = self.request.user
-        return super().has_module_perms(app_label)
 
