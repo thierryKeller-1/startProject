@@ -37,7 +37,7 @@ class AccountManager(BaseUserManager):
     def create_superuser(self, email, name, mcode, numuser, typeuser, password=None, **extra_fields):
         extra_fields.setdefault('is_staff', True)
         extra_fields.setdefault('is_superuser', True)
-        if extra_fields.get('is_staff') is not True:
+        if extra_fields.get('is_staff') is not True and typeuser not 'admin':
             raise ValueError("superuser must have is_superuser=True")
         return self._create_user(email, name, mcode, numuser, typeuser, password, **extra_fields)
 
@@ -50,11 +50,11 @@ class SLMUser(AbstractBaseUser, PermissionsMixin):
         teacher = 'teacher', ('teacher')
         participant = 'participant', _('participant')
 
-    email = models.EmailField(verbose_name="user email")
-    name = models.CharField(max_length=50, verbose_name='username')
+    email = models.EmailField(verbose_name="user email", unique=True)
+    username = models.CharField(max_length=50, verbose_name='username')
     mcode = models.CharField(max_length=50, verbose_name="M Code")
     numuser = models.CharField(max_length=50, verbose_name="Num Agent")
-    typeuser = models.CharField(max_length=50, choices=TypeChoiceField.choices, default=TypeChoiceField.participant)
+    typeuser = models.CharField(max_length=50, choices=TypeChoiceField.choices, default=TypeChoiceField.participant, verbose_name='type user')
     is_staff = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
     date_joined = models.DateTimeField(default=timezone.now)
@@ -68,6 +68,7 @@ class SLMUser(AbstractBaseUser, PermissionsMixin):
     class Meta:
         ordering = ["date_joined"]
         verbose_name_plural = "SLMUsers"
+
 
     def __str__(self) -> str:
         super().__str__()
