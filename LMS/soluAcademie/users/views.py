@@ -29,6 +29,7 @@ class UserView(LoginRequiredMixin, PermissionRequiredMixin, TemplateView):
 
 class UserCreateView(CreateView, PermissionRequiredMixin, LoginRequiredMixin):
     model = User
+    form_class = UserRegistrationForm
     permissions =  {
                         "all": ('user.all_user_permissions'),
                         "any" : ('user.add_only', 'add_update_view_only'),
@@ -43,9 +44,10 @@ class UserCreateView(CreateView, PermissionRequiredMixin, LoginRequiredMixin):
 
 class UserUpdateView(UpdateView, PermissionRequiredMixin, LoginRequiredMixin):
     model = User
+    form_class = UserRegistrationForm
     permissions =  {
                         "all": ('user.all_user_permissions'),
-                        "any" : ('user.add_only', 'add_update_view_only'),
+                        "any" : ('add_update_view_only'),
                     }
     # login_url = reverse_lazy('login')
     
@@ -57,6 +59,7 @@ class UserUpdateView(UpdateView, PermissionRequiredMixin, LoginRequiredMixin):
 
 class UserDeleteView(DeleteView, PermissionRequiredMixin, LoginRequiredMixin):
     model = User
+    form_class = UserRegistrationForm
     permissions =  {
                         "all": ('user.all_user_permissions')
                     }
