@@ -40,12 +40,12 @@ class AccountManager(BaseUserManager):
         
         email = self.normalize_email(email)
         student  = self.model(
-                            email=email,
-                            name=name,
-                            mcode=mcode,
-                            numuser=numuser,
-                            typeuser=typeuser
-                        )
+                                email=email,
+                                name=name,
+                                mcode=mcode,
+                                numuser=numuser,
+                                typeuser=typeuser
+                            )
         student.set_password(password)
         student.save(using=self._db)
         return student
@@ -65,12 +65,12 @@ class AccountManager(BaseUserManager):
     def create_superuser(self, email, name, mcode, numuser, typeuser, password=None, **extra_fields):
         extra_fields.setdefault('is_staff', True)
         extra_fields.setdefault('is_superuser', True)
-        if extra_fields.get('is_staff') is not True and typeuser is not 'admin':
+        if extra_fields.get('is_staff') != True and typeuser != 'admin':
             raise ValueError("superuser must have is_superuser=True")
         return self._create_user(email, name, mcode, numuser, typeuser, password, **extra_fields)
 
 
-class User(AbstractBaseUser, PermissionsMixin):
+class SolumadaUser(AbstractBaseUser, PermissionsMixin):
     """Class for all type of user for Solumada Academie Users"""
 
     class TypeChoiceField(models.TextChoices):
@@ -78,12 +78,12 @@ class User(AbstractBaseUser, PermissionsMixin):
         teacher     = 'teacher', ('teacher')
         participant = 'participant', _('participant')
     
-    unique_id = models.UUIDField(primary_key=True ,default=uuid.uuid4, editable=False)
+    user_id = models.UUIDField(primary_key=True ,default=uuid.uuid4, editable=False)
     email = models.EmailField(verbose_name="user email", unique=True, blank=False)
     username = models.CharField(max_length=50, verbose_name='username', blank=False)
-    mcode = models.CharField(max_length=50, verbose_name="M Code", blank=False)
-    numuser = models.CharField(max_length=50, verbose_name="Num Agent", blank=False)
-    typeuser = models.CharField(max_length=50, choices=TypeChoiceField.choices, default=TypeChoiceField.participant, verbose_name='type user', blank=False)
+    m_code = models.CharField(max_length=50, verbose_name="M Code", blank=False)
+    num_user = models.CharField(max_length=50, verbose_name="Num Agent", blank=False)
+    type_user = models.CharField(max_length=50, choices=TypeChoiceField.choices, default=TypeChoiceField.participant, verbose_name='type user', blank=False)
     is_staff = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
     date_joined = models.DateTimeField(auto_now_add=timezone.now)
@@ -93,7 +93,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     objects     = AccountManager()
 
     USERNAME_FIELD  = 'email'
-    REQUIRED_FIELDS = ['name','mcode', 'numuser', 'typeuser']
+    REQUIRED_FIELDS = ['username','m_code', 'num_user', 'type_user']
 
     class Meta:
         ordering            = ["date_joined"]

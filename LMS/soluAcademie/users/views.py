@@ -3,10 +3,11 @@ from django.contrib import messages
 from django.shortcuts import render
 
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
-from django.views.generic.edit import TemplateView, CreateView, UpdateView, DeleteView
+from django.views.generic.base import TemplateView
+from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.urls import reverse, reverse_lazy
 
-from .models import User
+from .models import SolumadaUser as User
 from .forms import UserRegistrationForm
 
 
