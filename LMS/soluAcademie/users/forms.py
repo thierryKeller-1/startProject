@@ -1,13 +1,13 @@
 from django import forms
 from django.contrib.auth.models import Group
-from django.contrib.auth.forms import ReadOnlyPasswordHashField
+from django.contrib.auth.forms import ReadOnlyPasswordHashField, UserCreationForm, UserChangeForm
 from django.utils.translation import ugettext as _
 
 import re
 from .models import SLMUser
 
 
-class UserRegistrationForm(forms.ModelForm):
+class UserRegistrationForm(UserCreationForm):
     password = forms.CharField(label='password', widget=forms.PasswordInput)
     passwordConfirm = forms.CharField(label='Confirm password', widget=forms.PasswordInput)
 
