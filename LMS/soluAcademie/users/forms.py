@@ -1,10 +1,9 @@
 from django import forms
 from django.contrib.auth.models import Group
 from django.contrib.auth.forms import ReadOnlyPasswordHashField, UserCreationForm, UserChangeForm
-from django.utils.translation import ugettext as _
 
 import re
-from .models import User
+from .models import SolumadaUser as User
 
 
 class UserRegistrationForm(UserCreationForm):
@@ -13,18 +12,18 @@ class UserRegistrationForm(UserCreationForm):
 
     class Meta:
         model = User
-        fields = ('email', 'name', 'mcode', 'numuser', 'typeuser', 'password', 'passwordConfirm')
+        fields = ('email', 'username', 'm_code', 'num_user', 'type_user', 'password', 'passwordConfirm')
     
     def clean_name(self):
-        name = self.cleaned_data.get('name')
-        if User.objects.exists('name'):
-            raise forms.ValidationError("user with this name already exist")
-        return name
+        username = self.cleaned_data.get('username')
+        if User.objects.exists(username):
+            raise forms.ValidationError("user with this username already exist")
+        return username
 
     def clean_mcode(self):
-        mcode = self.cleaned_data.get('mcode')
+        mcode = self.cleaned_data.get('m_code')
         if User.objects.exists('mcode'):
-            raise forms.ValidationError("user with this mcode already exist")
+            raise forms.ValidationError("user with this M Code already exist")
         return mcode
 
     def clean_password(self):
@@ -48,13 +47,13 @@ class UserRegistrationForm(UserCreationForm):
         user = super().save(commit=False)
         user.set_password(self.cleaned_data['password1'])
         permissions = []
-        if user.typeuser == 'admin':
+        if user.type_user == 'admin':
             user.is_superuser = True
-            user.User.user_permissions.set('all_user_permissions')
+            # user.User.user_permissions.set('all_user_permissions')
             user.save()
         else:
-            permissions.append('have_no_user_permissions')
-            user.user_permissions.set(permissions)
+            # permissions.append('have_no_user_permissions')
+            # user.user_permissions.set(permissions)
             user.save()
         return user
 
