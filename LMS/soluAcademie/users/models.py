@@ -5,74 +5,11 @@ from django.utils.translation import gettext_lazy as _
 
 import uuid
 
-class AccountManager(BaseUserManager):
-    """class for object manager for users"""
-
-    use_in_migrations = True
-
-    def _create_student(self, email,name, mcode, numuser, typeuser, password, **extra_fields):
-        values          = [email,name, mcode, numuser, typeuser]
-        field_value_map = dict(zip(self.model.REQUIRED_FIELDS, values))
-        
-        for field, value in field_value_map.items():
-            if not value:
-                raise ValueError(f"The value {field} is required")
-        
-        email = self.normalize_email(email)
-        student  = self.model(
-                            email=email,
-                            name=name,
-                            mcode=mcode,
-                            numuser=numuser,
-                            typeuser=typeuser
-                        )
-        student.set_password(password)
-        student.save(using=self._db)
-        return student
-
-    def _create_teacher(self, email,name, mcode, numuser, typeuser, password, **extra_fields):
-        values          = [email,name, mcode, numuser, typeuser]
-        field_value_map = dict(zip(self.model.REQUIRED_FIELDS, values))
-        
-        for field, value in field_value_map.items():
-            if not value:
-                raise ValueError(f"The value {field} is required")
-        
-        email = self.normalize_email(email)
-        student  = self.model(
-                                email=email,
-                                name=name,
-                                mcode=mcode,
-                                numuser=numuser,
-                                typeuser=typeuser
-                            )
-        student.set_password(password)
-        student.save(using=self._db)
-        return student
-    
-    def create_student(self, email, name, mcode, numuser, typeuser, password=None, **extra_fields):
-        extra_fields.setdefault('is_staff', False)
-        extra_fields.setdefault('is_superuser', False)
-        return self._create_user(email, name, mcode, numuser, typeuser, password, **extra_fields)
-
-
-    def create_teacher(self, email, name, mcode, numuser, typeuser, password=None, **extra_fields):
-        extra_fields.setdefault('is_staff', True)
-        extra_fields.setdefault('is_superuser', False)
-        return self._create_user(email, name, mcode, numuser, typeuser, password, **extra_fields)
-
-
-    def create_superuser(self, email, name, mcode, numuser, typeuser, password=None, **extra_fields):
-        extra_fields.setdefault('is_staff', True)
-        extra_fields.setdefault('is_superuser', True)
-        if extra_fields.get('is_staff') != True and typeuser != 'admin':
-            raise ValueError("superuser must have is_superuser=True")
-        return self._create_user(email, name, mcode, numuser, typeuser, password, **extra_fields)
+from .manager import AccountManager
 
 
 class SolumadaUser(AbstractBaseUser, PermissionsMixin):
     """Class for all type of user for Solumada Academie Users"""
-
     class TypeChoiceField(models.TextChoices):
         admin       = 'admin', _('admin')
         teacher     = 'teacher', ('teacher')
@@ -96,20 +33,19 @@ class SolumadaUser(AbstractBaseUser, PermissionsMixin):
     REQUIRED_FIELDS = ['username','m_code', 'num_user', 'type_user']
 
     class Meta:
-        ordering            = ["date_joined"]
-        verbose_name_plural = "Users"
+        ordering            = ["-date_joined"]
+        verbose_name_plural = "SolumadaUsers"
         permissions         =  [
                                     ("have_no_user_permissions", "Have No Permissions on User"),
-                                    ("add_only", "Can Add User"),
-                                    ("add_user_only", "Can Add User Only"),
-                                    ("view_only", "Can Only View User"),
-                                    ("add_update_view_only", "Can Add And View"),
                                     ("all_user_permissions", "Can Do everything to User"),
                                 ]
 
 
     def __str__(self) -> str:
         super().__str__()
-        return self.name
+        return self.email
+
+    def has_perm(self, perm, obj = None):
+        return self.is_superuser
 
 
