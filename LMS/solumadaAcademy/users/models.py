@@ -10,9 +10,10 @@ from .manager import AccountManager
 
 class SolumadaUser(AbstractBaseUser, PermissionsMixin):
     """Class for all type of user for Solumada Academie Users"""
+
     class TypeChoiceField(models.TextChoices):
         admin       = 'admin', _('admin')
-        teacher     = 'teacher', ('teacher')
+        teacher     = 'teacher', _('teacher')
         participant = 'participant', _('participant')
     
     user_id = models.UUIDField(primary_key=True ,default=uuid.uuid4, editable=False)
@@ -45,7 +46,15 @@ class SolumadaUser(AbstractBaseUser, PermissionsMixin):
         super().__str__()
         return self.email
 
-    def has_perm(self, perm, obj = None):
-        return self.is_superuser
+
+    def get_data(self):
+        return {
+            "user_id": self.user_id,
+            "username": self.username,
+            "email": self.email,
+            "m_code": self.m_code,
+            "num_user": self.num_user,
+            "type_user": self.type_user
+        }
 
 

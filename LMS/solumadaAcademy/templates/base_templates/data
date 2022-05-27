@@ -1,0 +1,305 @@
+form 
+
+from .models import Friend
+from django import forms
+import datetime
+
+class FriendForm(forms.ModelForm):
+    ## change the widget of the date field.
+    dob = forms.DateField(
+        label='What is your birth date?', 
+        # change the range of the years from 1980 to currentYear - 5
+        widget=forms.SelectDateWidget(years=range(1980, datetime.date.today().year-5))
+    )
+    
+    def __init__(self, *args, **kwargs):
+        super(FriendForm, self).__init__(*args, **kwargs)
+        ## add a "form-control" class to each form input
+        ## for enabling bootstrap
+        for name in self.fields.keys():
+            self.fields[name].widget.attrs.update({
+                'class': 'form-control',
+            })
+
+    class Meta:
+        model = Friend
+        fields = ("__all__")
+
+
+from django.http import JsonResponse
+from django.core import serializers
+from .forms import FriendForm
+from .models import Friend
+
+def indexView(request):
+    form = FriendForm()
+    friends = Friend.objects.all()
+    return render(request, "index.html", {"form": form, "friends": friends})
+
+def postFriend(request):
+    # request should be ajax and method should be POST.
+    if request.is_ajax and request.method == "POST":
+        # get the form data
+        form = FriendForm(request.POST)
+        # save the data and after fetch the object in instance
+        if form.is_valid():
+            instance = form.save()
+            # serialize in new friend object in json
+            ser_instance = serializers.serialize('json', [ instance, ])
+            # send to client side.
+            return JsonResponse({"instance": ser_instance}, status=200)
+        else:
+            # some form errors occured.
+            return JsonResponse({"error": form.errors}, status=400)
+
+    # some error occured
+    return JsonResponse({"error": ""}, status=400)
+
+
+from django.urls import path
+from my_app.views import (
+    indexView,
+    postFriend, 
+)
+
+urlpatterns = [
+    # ... other urls
+    path('', indexView),
+    path('post/ajax/friend', postFriend, name = "post_friend"),
+    # ...
+]
+
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container-fluid">
+    <form id="friend-form">
+        <div class="row">
+            {% csrf_token %}
+            {% for field in form %}
+            <div class="form-group col-4">
+                <label class="col-12">{{ field.label }}</label>
+                {{ field }}
+            </div>
+            {% endfor %}
+            <input type="submit" class="btn btn-primary" value="Create Friend" />
+        </div>
+    <form>
+</div>
+<hr />
+
+<div class="container-fluid">
+    <table class="table table-striped table-sm" id="my_friends">
+        <thead>
+            <tr>
+                <th>Nick name</th>
+                <th>First name</th>
+                <th>Last name</th>
+                <th>Likes</th>
+                <th>DOB</th>
+                <th>lives in</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for friend in friends %}
+        <tr>
+            <td>{{friend.nick_name}}</td>
+            <td>{{friend.first_name}}</td>
+            <td>{{friend.last_name}}</td>
+            <td>{{friend.likes}}</td>
+            <td>{{friend.dob | date:"Y-m-d"}}</td>
+            <td>{{friend.lives_in}}</td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+</div>
+{% endblock content %}
+
+{% block javascript %}
+<script>
+    /*
+        On submiting the form, send the POST ajax
+        request to server and after successfull submission
+        display the object.
+    */
+    $("#friend-form").submit(function (e) {
+        // preventing from page reload and default actions
+        e.preventDefault();
+        // serialize the data for sending the form data.
+        var serializedData = $(this).serialize();
+        // make POST ajax call
+        $.ajax({
+            type: 'POST',
+            url: "{% url 'post_friend' %}",
+            data: serializedData,
+            success: function (response) {
+                // on successfull creating object
+                // 1. clear the form.
+                $("#friend-form").trigger('reset');
+                // 2. focus to nickname input 
+                $("#id_nick_name").focus();
+
+                // display the newly friend to table.
+                var instance = JSON.parse(response["instance"]);
+                var fields = instance[0]["fields"];
+                $("#my_friends tbody").prepend(
+                    `<tr>
+                    <td>${fields["nick_name"]||""}</td>
+                    <td>${fields["first_name"]||""}</td>
+                    <td>${fields["last_name"]||""}</td>
+                    <td>${fields["likes"]||""}</td>
+                    <td>${fields["dob"]||""}</td>
+                    <td>${fields["lives_in"]||""}</td>
+                    </tr>`
+                )
+            },
+            error: function (response) {
+                // alert the error if any error occured
+                alert(response["responseJSON"]["error"]);
+            }
+        })
+    })
+</script>
+{% endblock javascript %}
+
+{% block javascript %}
+<script>
+    /*
+        On submiting the form, send the POST ajax
+        request to server and after successfull submission
+        display the object.
+    */
+    $("#friend-form").submit(function (e) {
+        // preventing from page reload and default actions
+        e.preventDefault();
+        // serialize the data for sending the form data.
+        var serializedData = $(this).serialize();
+        // make POST ajax call
+        $.ajax({
+            type: 'POST',
+            url: "{% url 'post_friend' %}",
+            data: serializedData,
+            success: function (response) {
+                // on successfull creating object
+                // 1. clear the form.
+                $("#friend-form").trigger('reset');
+                // 2. focus to nickname input 
+                $("#id_nick_name").focus();
+
+                // display the newly friend to table.
+                var instance = JSON.parse(response["instance"]);
+                var fields = instance[0]["fields"];
+                $("#my_friends tbody").prepend(
+                    `<tr>
+                    <td>${fields["nick_name"]||""}</td>
+                    <td>${fields["first_name"]||""}</td>
+                    <td>${fields["last_name"]||""}</td>
+                    <td>${fields["likes"]||""}</td>
+                    <td>${fields["dob"]||""}</td>
+                    <td>${fields["lives_in"]||""}</td>
+                    </tr>`
+                )
+            },
+            error: function (response) {
+                // alert the error if any error occured
+                alert(response["responseJSON"]["error"]);
+            }
+        })
+    })
+</script>
+{% endblock javascript %}
+
+
+from django.urls import path
+from my_app.views import (
+    checkNickName
+)
+
+urlpatterns = [
+    # ...other urls
+    path('get/ajax/validate/nickname', checkNickName, name = "validate_nickname")
+    # ...
+]
+
+
+{% block javascript %}
+<script>
+    /*
+    On focus out on input nickname,
+    call AJAX get request to check if the nickName
+    already exists or not.
+    */
+    $("#id_nick_name").focusout(function (e) {
+        e.preventDefault();
+        // get the nickname
+        var nick_name = $(this).val();
+        // GET AJAX request
+        $.ajax({
+            type: 'GET',
+            url: "{% url 'validate_nickname' %}",
+            data: {"nick_name": nick_name},
+            success: function (response) {
+                // if not valid user, alert the user
+                if(!response["valid"]){
+                    alert("You cannot create a friend with same nick name");
+                    var nickName = $("#id_nick_name");
+                    nickName.val("")
+                    nickName.focus()
+                }
+            },
+            error: function (response) {
+                console.log(response)
+            }
+        })
+    })
+</script>
+{% endblock javascript %}
+
+
+
+from django.shortcuts import render
+from django.http import JsonResponse
+from django.core import serializers
+from .forms import FriendForm
+from .models import Friend
+
+from django.views import View
+
+class FriendView(View):
+    form_class = FriendForm
+    template_name = "index.html"
+
+    def get(self, *args, **kwargs):
+        form = self.form_class()
+        friends = Friend.objects.all()
+        return render(self.request, self.template_name, 
+            {"form": form, "friends": friends})
+
+    def post(self, *args, **kwargs):
+        if self.request.is_ajax and self.request.method == "POST":
+            form = self.form_class(self.request.POST)
+            if form.is_valid():
+                instance = form.save()
+                ser_instance = serializers.serialize('json', [ instance, ])
+                # send to client side.
+                return JsonResponse({"instance": ser_instance}, status=200)
+            else:
+                return JsonResponse({"error": form.errors}, status=400)
+
+        return JsonResponse({"error": ""}, status=400)
+
+
+from django.urls import path
+from my_app.views import (
+    FriendView
+)
+
+urlpatterns = [
+    # ... other urls
+    path("", FriendView.as_view(), name = "friend_cbv"),
+    # ...
+]
+

@@ -8,7 +8,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-0h%3$q7+f_u7#g%3791ngr5rlkmil@s)^e2tlc7*gh!9ri08x@'
+SECRET_KEY = 'django-insecure-@5pr4_*u(_#)%g^ju%=&5g+9ru_j3ny2c-6@t42nrt$iycr6n4'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -26,6 +26,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'users.apps.UsersConfig',
+    'crispy_forms',
 ]
 
 MIDDLEWARE = [
@@ -38,7 +39,9 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-ROOT_URLCONF = 'soluAcademie.urls'
+ROOT_URLCONF = 'solumadaAcademy.urls'
+
+
 
 TEMPLATES = [
     {
@@ -56,7 +59,9 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'soluAcademie.wsgi.application'
+CRISPY_TEMPLATE_PACK = 'bootstrap4'
+
+WSGI_APPLICATION = 'solumadaAcademy.wsgi.application'
 
 
 # Database
@@ -91,6 +96,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 AUTHENTICATION_BACKENDS = ('django.contrib.auth.backends.ModelBackend',)
 
+
 # Internationalization
 # https://docs.djangoproject.com/en/4.0/topics/i18n/
 
@@ -117,3 +123,7 @@ AUTH_USER_MODEL = 'users.SolumadaUser'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+
+LOGIN_REDIRECT_URL = 'home'
+
+# EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'

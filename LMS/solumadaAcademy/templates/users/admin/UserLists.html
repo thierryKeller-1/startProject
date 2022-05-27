@@ -1,0 +1,136 @@
+{% load crispy_forms_tags %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- bootstrap bundle -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <!-- sweetalert -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.12.1/css/dataTables.bootstrap.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+    <!-- datatable css -->
+    <!-- bootstrap 5 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        #tableUser thead{
+            background-color: black;
+            color: aliceblue;
+        }
+    </style>
+    <title>DataTable</title>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row shadow p-3 mb-5 w-100">
+            <div class="col-12 my-2">
+                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#staticBackdrop">
+                    Create    
+                </button>
+            </div>
+            <div class="col-12">
+                <table id="tableUser" class="table table-striped table-bordered" style="width: 100%;">
+                    <thead>
+                        <tr>
+                            <th style="width: 20%;">Id</th>
+                            <th style="width: 15%;">Username</th>
+                            <th style="width: 15%;">Email</th>
+                            <th style="width: 10%;">M Code</th>
+                            <th style="width:15%;">Num User</th>
+                            <th style="width: 10%;">Type User</th>
+                            <th style="width: 15%;" class="text-center">Actions</th>
+                        </tr>
+                    </thead>
+                </table>
+            </div>
+        </div>
+
+        <!-- Modal -->
+       
+        <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title text-center" id="staticBackdropLabel">New User</h5>
+                    </div>
+                    <div class="modal-body">
+                        <div class="p-2">
+                            <div class="text-center">
+                                <div class="alert" style="display: none;"><small id="message"></small></div>
+                            </div>
+                            <form method="post" action="{% url 'userCreateView' %}" id="UserForm" autocomplete="off">
+                                {% csrf_token %}
+                                {{ form|crispy }}
+                            </form>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Cancel</button>
+                        <button type="button" class="btn btn-success" id="SaveUser">Save</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+    </div>
+    <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+    <script src="https://cdn.datatables.net/1.12.1/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.12.1/js/dataTables.bootstrap.min.js"></script>
+    
+
+    <script>
+        $(document).ready(function () {
+
+            var userTable = $("#tableUser").DataTable({
+                "ajax": '/solumadaAcademy/Users/lists',
+                "columns": [
+                                {"data": "user_id"},
+                                {"data": "username"},
+                                {"data": "email"},
+                                {"data": "m_code"},
+                                {"data": "num_user"},
+                                {"data": "type_user"},
+                                {"defaultContent": "<div class='text-center'><div class='btn-group' role='group' aria-label='Basic example'> <button type='button' class='btn btn-warning editUser'>Edit</button><button type='button' class='btn btn-danger delteUser'>Delete</button></div></div>"},
+                            ],
+                paging: true,
+                pageLength: 10,
+                autoWidth: false,
+                searching: true,
+                bInfo: true,
+                bSort: true,
+            }); 
+
+            $('#SaveUser').on('click', function(e){
+
+                e.preventDefault();
+
+                var form = $("#UserForm");
+                var csrftoken = jQuery('[name=csrfmiddlewaretoken]').val();
+
+                $.ajax({
+                    method: form.attr("method"),
+                    url: form.attr("action"),
+                    enctype: 'json',
+                    data:  {
+                                csrfmiddlewaretoken: csrftoken,
+                                form : form.serialize(),
+                            },  
+                    cache: false,
+                    enctype: false,
+                    success: function(data){
+                        $('#message').text("User saved");
+                        $('.alert').addClass('alert-success').css('diplay', 'block');
+                    },
+                    error: function(err){
+                        alert("error on saving user");
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
