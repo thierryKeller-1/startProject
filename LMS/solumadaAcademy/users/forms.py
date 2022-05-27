@@ -17,13 +17,13 @@ class UserRegistrationForm(UserCreationForm):
     
     def clean_name(self):
         username = self.cleaned_data.get('username')
-        if User.objects.exists(username):
+        if SolumadaUser.objects.exists(username):
             raise forms.ValidationError("user with this username already exist")
         return username
 
     def clean_mcode(self):
         mcode = self.cleaned_data.get('m_code')
-        if User.objects.exists('mcode'):
+        if SolumadaUser.objects.exists('mcode'):
             raise forms.ValidationError("user with this M Code already exist")
         return mcode
 
@@ -32,7 +32,7 @@ class UserRegistrationForm(UserCreationForm):
         password1 = self.cleaned_data.get("password1")
         password2 = self.cleaned_data.get("password2")
         if password1 and password2 and password1 != password2:
-            raise ValidationError("Passwords don't match")
+            raise forms.ValidationError("Passwords don't match")
         return password2
 
 

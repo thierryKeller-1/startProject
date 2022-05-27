@@ -47,3 +47,14 @@ class SolumadaUser(AbstractBaseUser, PermissionsMixin):
         return self.email
 
 
+    def get_data(self):
+        return {
+            "user_id": self.user_id,
+            "username": self.username,
+            "email": self.email,
+            "m_code": self.m_code,
+            "num_user": self.num_user,
+            "type_user": self.type_user
+        }
+
+
