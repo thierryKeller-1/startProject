@@ -1,4 +1,5 @@
-from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
+from django.contrib.auth.models import BaseUserManager, PermissionsMixin
+
 
 class AccountManager(BaseUserManager):
     """class for object manager for users"""
@@ -32,8 +33,8 @@ class AccountManager(BaseUserManager):
         return self._create_user(email, username, m_code, num_user, type_user, password, **extra_fields)
 
     def create_superuser(self, email, username, m_code, num_user, type_user, password, **extra_fields):
+        extra_fields['is_staff'] = True
         extra_fields['is_superuser'] = True
-        extra_fields['is_superuser'] = True
-        if extra_fields.get('is_superuser') != True and extra_fields.get('is_superuser') != True:
+        if extra_fields.get('is-staff') != True and extra_fields.get('is_superuser') != True:
             raise ValueError("superuser must have is_superuser=True")
         return self._create_user(email, username, m_code, num_user, type_user, password, **extra_fields)
